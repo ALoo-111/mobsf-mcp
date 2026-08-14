@@ -31,6 +31,14 @@ def test_settings_reject_invalid_url() -> None:
         Settings(mobsf_url="not-a-url").validate()
 
 
+def test_settings_reads_runtime_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MOBSF_URL", "https://mobsf.live")
+    monkeypatch.setenv("MOBSF_API_KEY", "runtime-only-placeholder")
+    settings = Settings.from_env(load_file=False)
+    assert settings.mobsf_url == "https://mobsf.live"
+    assert settings.mobsf_api_key == "runtime-only-placeholder"
+
+
 def test_validate_apk_and_hashes(tmp_path) -> None:
     path = tmp_path / "sample.apk"
     _apk(path)

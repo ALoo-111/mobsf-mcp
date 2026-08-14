@@ -1,0 +1,14 @@
+run = "MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=8080 mobsf-mcp"
+entrypoint = "src/mobsf_mcp/server.py"
+
+[deployment]
+run = ["sh", "-c", "MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=8080 mobsf-mcp"]
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[env]
+MOBSF_URL = "https://mobsf.live"
+MOBSF_VERIFY_TLS = "true"
+ENABLE_DYNAMIC_ANALYSIS = "false"

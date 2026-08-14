@@ -60,13 +60,20 @@ python -m pip install -e '.[dev]'
 cp .env.example .env
 ```
 
-Set `MOBSF_API_KEY` in `.env` or in the process environment. **Never commit `.env`, APK samples, reports, or API keys.**
+The API key is intentionally not part of the repository. For local development, set it in the process environment or in a local `.env` file that is ignored by Git:
+
+```bash
+export MOBSF_URL=https://mobsf.live
+export MOBSF_API_KEY='<set-this-locally-or-in-your-deployment-secret-store>'
+```
+
+Never commit `.env`, APK samples, reports, or API keys. The production runtime reads `MOBSF_URL` and `MOBSF_API_KEY` from environment variables at startup; the application does not provide a fallback key.
 
 ## Configuration
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `MOBSF_URL` | `http://127.0.0.1:8000` | Existing MobSF base URL |
+| `MOBSF_URL` | `https://mobsf.live` in deployment; local default is `http://127.0.0.1:8000` | Existing MobSF base URL |
 | `MOBSF_API_KEY` | empty | API key supplied at runtime; never logged |
 | `MOBSF_TIMEOUT` | `300` | MobSF request timeout in seconds |
 | `MOBSF_VERIFY_TLS` | `true` | TLS certificate verification |
@@ -80,7 +87,22 @@ Set `MOBSF_API_KEY` in `.env` or in the process environment. **Never commit `.en
 | `MCP_HOST` | `127.0.0.1` | Streamable HTTP bind address |
 | `MCP_PORT` | `8001` | Streamable HTTP port |
 
-The configured API key is sent using `X-Mobsf-Api-Key`, which is one of the authentication headers documented by MobSF.[^1]
+The configured API key is sent using `X-Mobsf-Api-Key`, which is one of the authentication headers documented by MobSF.[^1] The value is never printed, logged, included in structured errors, or committed.
+
+## Deployment environment variables
+
+For GitHub-based deployment on Render or Replit, configure the following values in the platform’s environment/secrets settings rather than committing them:
+
+| Variable | Required | Deployment value |
+| --- | --- | --- |
+| `MOBSF_URL` | Yes | `https://mobsf.live` or the URL of an authorized self-hosted MobSF instance |
+| `MOBSF_API_KEY` | Yes | The MobSF API key stored as a platform secret |
+| `MOBSF_TIMEOUT` | No | `300` |
+| `MOBSF_VERIFY_TLS` | No | `true` |
+| `ENABLE_DYNAMIC_ANALYSIS` | No | `false` unless the backend has a supported dynamic environment |
+| `MAX_APK_SIZE_MB` | No | `500` |
+
+Render can use the included `render.yaml`; mark `MOBSF_API_KEY` as a secret when prompted. Replit can use the included `.replit`; add `MOBSF_API_KEY` through Replit Secrets. The MCP server should be exposed over Streamable HTTP in hosted environments, while stdio is intended for local MCP hosts.
 
 ## Running
 
@@ -98,6 +120,24 @@ MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=8001 mobsf-mcp
 ```
 
 The official SDK documents Streamable HTTP as the current HTTP transport and exposes the MCP endpoint at `/mcp` by default.[^4]
+
+## Docker deployment
+
+The included `Dockerfile` runs the MCP server without bundling MobSF. Pass the runtime configuration through the deployment environment:
+
+```bash
+docker build -t mobsf-mcp .
+docker run --rm -p 8001:8001 \\
+  -e MOBSF_URL=https://mobsf.live \\
+  -e MOBSF_API_KEY='<provided-by-your-secret-store>' \\
+  -e MOBSF_VERIFY_TLS=true \\
+  -e MCP_TRANSPORT=streamable-http \\
+  -e MCP_HOST=0.0.0.0 \\
+  -e MCP_PORT=8001 \\
+  mobsf-mcp
+```
+
+Do not put the real key in a Dockerfile, shell history, Compose file, or repository. Use the platform’s secret injection mechanism.
 
 ## Docker Compose
 
@@ -148,7 +188,7 @@ make format
 make docker-build
 ```
 
-A live integration check can be performed separately by setting `MOBSF_URL`, `MOBSF_API_KEY`, and an authorized test backend. Do not place production credentials in test fixtures or commit them.
+A live integration check can be performed separately by setting `MOBSF_URL`, `MOBSF_API_KEY`, and an authorized test backend. This repository validation run uses mocked HTTP responses because live credentials and an APK are deployment inputs, not repository contents. Do not place production credentials in test fixtures or commit them.
 
 ## Security notes
 
