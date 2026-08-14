@@ -1,0 +1,26 @@
+services:
+  mobsf-mcp:
+    build: .
+    environment:
+      MOBSF_URL: ${MOBSF_URL:-http://mobsf:8000}
+      MOBSF_API_KEY: ${MOBSF_API_KEY:-}
+      MOBSF_TIMEOUT: ${MOBSF_TIMEOUT:-300}
+      MOBSF_VERIFY_TLS: ${MOBSF_VERIFY_TLS:-true}
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8001
+      ENABLE_DYNAMIC_ANALYSIS: ${ENABLE_DYNAMIC_ANALYSIS:-false}
+    ports:
+      - "${MCP_PORT:-8001}:8001"
+    depends_on:
+      mobsf:
+        condition: service_started
+
+  # Remove or comment this service when using an existing MobSF deployment.
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    environment:
+      MOBSF_USERNAME: ${MOBSF_USERNAME:-mobsf}
+      MOBSF_PASSWORD: ${MOBSF_PASSWORD:-mobsf}
+    ports:
+      - "${MOBSF_PORT:-8000}:8000"

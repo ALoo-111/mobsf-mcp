@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mobsf-mcp"
+version = "0.1.0"
+description = "Production-ready MCP server for authorized MobSF mobile application security analysis."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Manus AI" }]
+dependencies = [
+  "httpx>=0.27,<1",
+  "pydantic>=2.8,<3",
+  "python-dotenv>=1.0,<2",
+  "mcp>=2,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.24,<1",
+  "ruff>=0.9,<1",
+  "mypy>=1.13,<2",
+]
+
+[project.scripts]
+mobsf-mcp = "mobsf_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mobsf_mcp"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+ignore_missing_imports = true
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args}"
+lint = "ruff check src tests"
+format = "ruff format src tests"
+typecheck = "mypy src"
