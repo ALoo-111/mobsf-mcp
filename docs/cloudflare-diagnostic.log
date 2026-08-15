@@ -1,0 +1,55 @@
+MobSF Cloudflare diagnostic
+Timestamp: 2026-08-15 (sandbox probe)
+Target: GET https://mobsf.live/api/v1/scans?page=1&page_size=1
+Reference credential: current /api_docs key, used in memory only and omitted
+Source IP: sandbox edge probe; Render service egress is separate
+
+=== x-mobsf ===
+Request method: GET
+Request path: /api/v1/scans?page=1&page_size=1
+Request headers: Accept: application/json; User-Agent: mobsf-mcp-diagnostic/1.0; X-Mobsf-Api-Key: <redacted>
+HTTP/2 403
+content-type: text/html; charset=UTF-8
+cf-mitigated: challenge
+server: cloudflare
+cf-ray: a2b62991b91aa5b3-TIA
+Body class: html
+Body marker: Just a moment
+
+=== authorization-raw ===
+Request method: GET
+Request path: /api/v1/scans?page=1&page_size=1
+Request headers: Accept: application/json; User-Agent: mobsf-mcp-diagnostic/1.0; Authorization: <redacted>
+HTTP/2 403
+content-type: text/html; charset=UTF-8
+cf-mitigated: challenge
+server: cloudflare
+cf-ray: a2b6299e4aa4bd99-TIA
+Body class: html
+Body marker: Just a moment
+
+=== authorization-bearer ===
+Request method: GET
+Request path: /api/v1/scans?page=1&page_size=1
+Request headers: Accept: application/json; User-Agent: mobsf-mcp-diagnostic/1.0; Authorization: Bearer <redacted>
+HTTP/2 403
+content-type: text/html; charset=UTF-8
+cf-mitigated: challenge
+server: cloudflare
+cf-ray: a2b629ad0ac5a5b3-TIA
+Body class: html
+Body marker: Just a moment
+
+=== x-api-key ===
+Request method: GET
+Request path: /api/v1/scans?page=1&page_size=1
+Request headers: Accept: application/json; User-Agent: mobsf-mcp-diagnostic/1.0; X-API-Key: <redacted>
+HTTP/2 403
+content-type: text/html; charset=UTF-8
+cf-mitigated: challenge
+server: cloudflare
+cf-ray: a2b629bb2f2a5f50-TIA
+Body class: html
+Body marker: Just a moment
+
+Conclusion: all tested forms were intercepted by Cloudflare's managed challenge. The response was HTML, not the MobSF JSON error response. The MobSF REST middleware was not reached.
