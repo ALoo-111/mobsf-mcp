@@ -23,6 +23,8 @@ class Settings:
     enable_dynamic_analysis: bool = False
     dynamic_analysis_timeout: float = 600.0
     max_response_bytes: int = 50 * 1024 * 1024
+    http_client_backend: str = "httpx"
+    http_client_http2: bool = False
     source_context_lines: int = 3
     max_source_bytes: int = 64 * 1024
 
@@ -45,6 +47,8 @@ class Settings:
                 "DYNAMIC_ANALYSIS_TIMEOUT", cls.dynamic_analysis_timeout
             ),
             max_response_bytes=_int_env("MAX_RESPONSE_BYTES", cls.max_response_bytes),
+            http_client_backend=os.getenv("HTTP_CLIENT_BACKEND", cls.http_client_backend),
+            http_client_http2=_bool_env("HTTP_CLIENT_HTTP2", cls.http_client_http2),
             source_context_lines=_int_env("SOURCE_CONTEXT_LINES", cls.source_context_lines),
             max_source_bytes=_int_env("MAX_SOURCE_BYTES", cls.max_source_bytes),
         )
@@ -63,6 +67,11 @@ class Settings:
             raise ConfigurationError("MAX_APK_SIZE_MB must be positive")
         if self.max_response_bytes <= 0 or self.max_source_bytes <= 0:
             raise ConfigurationError("Response and source limits must be positive")
+        valid_backends = {"requests", "httpx", "curl_cffi", "curl-cffi"}
+        if self.http_client_backend.strip().lower() not in valid_backends:
+            raise ConfigurationError(
+                "HTTP_CLIENT_BACKEND must be one of: requests, httpx, curl_cffi"
+            )
         if self.source_context_lines < 0:
             raise ConfigurationError("SOURCE_CONTEXT_LINES cannot be negative")
 

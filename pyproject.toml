@@ -11,13 +11,17 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Manus AI" }]
 dependencies = [
-  "httpx>=0.27,<1",
+  "httpx[http2]>=0.27,<1",
+  "requests>=2.32,<3",
   "pydantic>=2.8,<3",
   "python-dotenv>=1.0,<2",
   "mcp>=2,<3",
 ]
 
 [project.optional-dependencies]
+transport = [
+  "curl-cffi>=0.7,<1",
+]
 dev = [
   "pytest>=8.3,<9",
   "pytest-asyncio>=0.24,<1",
@@ -53,5 +57,5 @@ ignore_missing_imports = true
 [tool.hatch.envs.default.scripts]
 test = "pytest {args}"
 lint = "ruff check src tests"
-format = "ruff format src tests"
+format = "ruff format src tests scripts"
 typecheck = "mypy src"

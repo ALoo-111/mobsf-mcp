@@ -196,6 +196,18 @@ python scripts/diagnose_mobsf_api.py
 
 The diagnostic tests the documented raw header forms plus non-production comparison variants, prints only redacted request/response metadata, and never prints API keys, cookies, CSRF tokens, or full response bodies. The provider-side evidence and allowlisting request is documented in [`docs/cloudflare-provider-request.md`](docs/cloudflare-provider-request.md). This repository validation run uses mocked HTTP responses because live credentials and an APK are deployment inputs, not repository contents. Do not place production credentials in test fixtures or commit them.
 
+## HTTP transport backends
+
+The MCP uses an interchangeable transport factory selected by `HTTP_CLIENT_BACKEND`:
+
+| Backend | Configuration | Purpose |
+|---|---|---|
+| `httpx` | Default; set `HTTP_CLIENT_HTTP2=true` to enable HTTP/2 | Native async transport used in production and tests |
+| `requests` | `HTTP_CLIENT_BACKEND=requests` | Synchronous requests session executed off the event loop |
+| `curl_cffi` | Install `.[transport]`, then set `HTTP_CLIENT_BACKEND=curl_cffi` | Optional ordinary curl-compatible transport for interoperability diagnostics |
+
+All backends expose the same request interface and normalize responses to `httpx.Response`. The `curl_cffi` adapter intentionally does not use browser impersonation, JA3 spoofing, challenge solving, clearance cookies, or proxy rotation. None of these transports can guarantee access through a Cloudflare managed challenge; a 403 HTML challenge remains an upstream provider policy result and must be resolved by the provider.
+
 ## Troubleshooting authentication
 
 At startup, the server logs only the configured MobSF URL and a boolean `api_key_configured` value; it never logs the API key. The client sends the raw runtime value in the documented `X-Mobsf-Api-Key` header and does not add a `Bearer` prefix. The startup probe uses `GET /api/v1/scans?page=1&page_size=1`, which is the documented recent-scans endpoint.

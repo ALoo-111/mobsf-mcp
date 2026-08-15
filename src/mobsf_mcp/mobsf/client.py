@@ -10,6 +10,7 @@ from typing import Any, Self
 import httpx
 
 from mobsf_mcp.config import Settings
+from mobsf_mcp.mcp_client.http import HTTPBackend, create_http_backend, wrap_httpx_client
 from mobsf_mcp.mobsf.endpoints import ENDPOINTS, Endpoint
 from mobsf_mcp.mobsf.exceptions import (
     MobSFAuthenticationError,
@@ -31,17 +32,13 @@ class MobSFClient:
     ) -> None:
         self.settings = settings
         headers = {"X-Mobsf-Api-Key": settings.mobsf_api_key}
-        self._client = http_client or httpx.AsyncClient(
-            base_url=settings.mobsf_url,
-            headers=headers,
-            timeout=settings.mobsf_timeout,
-            verify=settings.mobsf_verify_tls,
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
-        )
         if http_client is not None:
-            self._client.headers.update(headers)
-        self._owns_client = http_client is None
+            http_client.headers.update(headers)
+        self._backend: HTTPBackend = (
+            wrap_httpx_client(http_client)
+            if http_client is not None
+            else create_http_backend(settings, headers)
+        )
 
     async def __aenter__(self) -> Self:
         return self
@@ -55,8 +52,7 @@ class MobSFClient:
         await self.aclose()
 
     async def aclose(self) -> None:
-        if self._owns_client:
-            await self._client.aclose()
+        await self._backend.aclose()
 
     async def health_check(self) -> dict[str, Any]:
         response = await self._request("scans", params={"page": 1, "page_size": 1})
@@ -135,7 +131,7 @@ class MobSFClient:
         url = definition.path
         logger.info("MobSF request: %s %s", definition.method, url)
         try:
-            response = await self._client.request(
+            response = await self._backend.request(
                 definition.method, url, params=params, data=data, files=files
             )
         except httpx.TimeoutException as exc:

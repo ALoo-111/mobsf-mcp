@@ -14,6 +14,10 @@ services:
         value: "300"
       - key: MOBSF_VERIFY_TLS
         value: "true"
+      - key: HTTP_CLIENT_BACKEND
+        value: httpx
+      - key: HTTP_CLIENT_HTTP2
+        value: "false"
       - key: ENABLE_DYNAMIC_ANALYSIS
         value: "false"
       - key: MAX_APK_SIZE_MB
