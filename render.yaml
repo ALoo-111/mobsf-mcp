@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: mobsf-mcp
+    runtime: python
+    plan: free
+    # curl-cffi needs build tools to compile its libcurl wrapper
+    buildCommand: |
+      apt-get update && apt-get install -y libcurl4-openssl-dev libssl-dev gcc python3-dev
+      pip install --upgrade pip
+      pip install -e .
+    startCommand: MCP_TRANSPORT=streamable-http MCP_HOST=0.0.0.0 MCP_PORT=10000 mobsf-mcp
+    envVars:
+      - key: MOBSF_URL
+        value: https://mobsf.live
+      - key: MOBSF_API_KEY
+        sync: false
+      - key: MOBSF_TIMEOUT
+        value: "300"
+      - key: MOBSF_VERIFY_TLS
+        value: "true"
+      - key: HTTP_CLIENT_BACKEND
+        value: curl_cffi
+      - key: CURL_CFFI_IMPERSONATE
+        value: chrome124
+      - key: HTTP_CLIENT_HTTP2
+        value: "false"
+      - key: ENABLE_DYNAMIC_ANALYSIS
+        value: "false"
+      - key: MAX_APK_SIZE_MB
+        value: "500"
