@@ -190,6 +190,12 @@ make docker-build
 
 A live integration check can be performed separately by setting `MOBSF_URL`, `MOBSF_API_KEY`, and an authorized test backend. This repository validation run uses mocked HTTP responses because live credentials and an APK are deployment inputs, not repository contents. Do not place production credentials in test fixtures or commit them.
 
+## Troubleshooting authentication
+
+At startup, the server logs only the configured MobSF URL and a boolean `api_key_configured` value; it never logs the API key. The client sends the raw runtime value in the documented `X-Mobsf-Api-Key` header and does not add a `Bearer` prefix. The startup probe uses `GET /api/v1/scans?page=1&page_size=1`, which is the documented recent-scans endpoint.
+
+If this request returns HTTP 401 or 403, verify that the deployment has a non-empty `MOBSF_API_KEY`, that the key belongs to the configured `MOBSF_URL`, and that the hosted MobSF instance accepts API access for that key. A 403 from the backend is not treated as a successful health check, and the server continues to expose MCP tools so the deployment can be diagnosed without fabricating an authenticated result.
+
 ## Security notes
 
 APK files are untrusted input. The server validates the path, extension, regular-file status, size, ZIP signature, and common APK members before upload. It calculates MD5, SHA-1, and SHA-256 locally without executing the file. It does not shell out with an APK-derived command, log APK contents, log API keys, or automatically run APK commands on the host.

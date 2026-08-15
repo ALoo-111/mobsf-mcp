@@ -201,6 +201,11 @@ def analysis_scorecard(scan_hash: str) -> str:
 
 
 async def _startup_check() -> None:
+    logger.info(
+        "MobSF startup configuration: url=%s api_key_configured=%s",
+        settings.mobsf_url,
+        bool(settings.mobsf_api_key),
+    )
     try:
         async with MobSFClient(settings) as client:
             await client.health_check()

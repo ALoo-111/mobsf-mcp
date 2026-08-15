@@ -30,14 +30,17 @@ class MobSFClient:
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         self.settings = settings
+        headers = {"X-Mobsf-Api-Key": settings.mobsf_api_key}
         self._client = http_client or httpx.AsyncClient(
             base_url=settings.mobsf_url,
-            headers={"X-Mobsf-Api-Key": settings.mobsf_api_key},
+            headers=headers,
             timeout=settings.mobsf_timeout,
             verify=settings.mobsf_verify_tls,
             follow_redirects=True,
             limits=httpx.Limits(max_connections=10, max_keepalive_connections=5),
         )
+        if http_client is not None:
+            self._client.headers.update(headers)
         self._owns_client = http_client is None
 
     async def __aenter__(self) -> Self:

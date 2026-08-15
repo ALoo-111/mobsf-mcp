@@ -92,9 +92,35 @@ def test_evidence_is_bounded() -> None:
 
 
 @pytest.mark.asyncio
-async def test_client_maps_authentication_failure() -> None:
+async def test_client_sends_documented_header_and_health_check_request() -> None:
+    captured: dict[str, object] = {}
+
     def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(401, json={"error": "unauthorized"}, request=request)
+        captured["authorization"] = request.headers.get("Authorization")
+        captured["mobsf_header"] = request.headers.get("X-Mobsf-Api-Key")
+        captured["url"] = str(request.url)
+        return httpx.Response(200, json={"scans": []}, request=request)
+
+    client = MobSFClient(
+        Settings(mobsf_url="http://mobsf.test", mobsf_api_key="runtime-only-key"),
+        http_client=httpx.AsyncClient(
+            base_url="http://mobsf.test", transport=httpx.MockTransport(handler)
+        ),
+    )
+    result = await client.health_check()
+    await client.aclose()
+
+    assert result["reachable"] is True
+    assert captured["authorization"] is None
+    assert captured["mobsf_header"] == "runtime-only-key"
+    assert captured["url"] == "http://mobsf.test/api/v1/scans?page=1&page_size=1"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status_code", [401, 403])
+async def test_client_maps_authentication_failure(status_code: int) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(status_code, json={"error": "unauthorized"}, request=request)
 
     client = MobSFClient(
         _settings(),
