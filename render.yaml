@@ -15,7 +15,7 @@ services:
       - key: MOBSF_VERIFY_TLS
         value: "true"
       - key: HTTP_CLIENT_BACKEND
-        value: httpx
+        value: requests
       - key: HTTP_CLIENT_HTTP2
         value: "false"
       - key: ENABLE_DYNAMIC_ANALYSIS

@@ -23,7 +23,7 @@ class Settings:
     enable_dynamic_analysis: bool = False
     dynamic_analysis_timeout: float = 600.0
     max_response_bytes: int = 50 * 1024 * 1024
-    http_client_backend: str = "httpx"
+    http_client_backend: str = "requests"
     http_client_http2: bool = False
     source_context_lines: int = 3
     max_source_bytes: int = 64 * 1024

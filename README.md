@@ -202,8 +202,8 @@ The MCP uses an interchangeable transport factory selected by `HTTP_CLIENT_BACKE
 
 | Backend | Configuration | Purpose |
 |---|---|---|
-| `httpx` | Default; set `HTTP_CLIENT_HTTP2=true` to enable HTTP/2 | Native async transport used in production and tests |
-| `requests` | `HTTP_CLIENT_BACKEND=requests` | Synchronous requests session executed off the event loop |
+| `requests` | Default; set `HTTP_CLIENT_BACKEND=requests` | Synchronous requests session executed off the event loop |
+| `httpx` | `HTTP_CLIENT_BACKEND=httpx`; set `HTTP_CLIENT_HTTP2=true` to enable HTTP/2 | Native async transport used in production and tests |
 | `curl_cffi` | Install `.[transport]`, then set `HTTP_CLIENT_BACKEND=curl_cffi` | Optional ordinary curl-compatible transport for interoperability diagnostics |
 
 All backends expose the same request interface and normalize responses to `httpx.Response`. The `curl_cffi` adapter intentionally does not use browser impersonation, JA3 spoofing, challenge solving, clearance cookies, or proxy rotation. None of these transports can guarantee access through a Cloudflare managed challenge; a 403 HTML challenge remains an upstream provider policy result and must be resolved by the provider.
