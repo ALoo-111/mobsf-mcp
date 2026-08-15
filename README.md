@@ -188,7 +188,13 @@ make format
 make docker-build
 ```
 
-A live integration check can be performed separately by setting `MOBSF_URL`, `MOBSF_API_KEY`, and an authorized test backend. This repository validation run uses mocked HTTP responses because live credentials and an APK are deployment inputs, not repository contents. Do not place production credentials in test fixtures or commit them.
+A live integration check can be performed separately by setting `MOBSF_URL`, `MOBSF_API_KEY`, and an authorized test backend. For the current `mobsf.live` Cloudflare challenge, run the redacted diagnostic from the deployed service environment:
+
+```bash
+python scripts/diagnose_mobsf_api.py
+```
+
+The diagnostic tests the documented raw header forms plus non-production comparison variants, prints only redacted request/response metadata, and never prints API keys, cookies, CSRF tokens, or full response bodies. The provider-side evidence and allowlisting request is documented in [`docs/cloudflare-provider-request.md`](docs/cloudflare-provider-request.md). This repository validation run uses mocked HTTP responses because live credentials and an APK are deployment inputs, not repository contents. Do not place production credentials in test fixtures or commit them.
 
 ## Troubleshooting authentication
 
