@@ -53,3 +53,11 @@ Body class: html
 Body marker: Just a moment
 
 Conclusion: all tested forms were intercepted by Cloudflare's managed challenge. The response was HTML, not the MobSF JSON error response. The MobSF REST middleware was not reached.
+
+=== modular transport comparison ===
+Reference credential: current /api_docs key, used in memory only and omitted
+All requests targeted GET https://mobsf.live/api/v1/scans?page=1&page_size=1 with Accept-Encoding: identity.
+requests backend: HTTP 403; content_type=text/html; server=cloudflare; cf_mitigated=challenge; body_class=html
+httpx backend with HTTP/2: HTTP 403; content_type=text/html; server=cloudflare; cf_mitigated=challenge; body_class=html
+curl_cffi backend without impersonation: HTTP 403; content_type=text/html; server=cloudflare; cf_mitigated=challenge; body_class=html
+Conclusion: standard transport selection does not change the Cloudflare-layer result.

@@ -173,12 +173,13 @@ def create_http_backend(settings: Settings, headers: Mapping[str, str]) -> HTTPB
     """Create a transport from HTTP_CLIENT_BACKEND without logging secret values."""
 
     backend = settings.http_client_backend.strip().lower()
+    transport_headers = {"Accept-Encoding": "identity", **headers}
     if backend == "requests":
-        return RequestsBackend(settings, headers)
+        return RequestsBackend(settings, transport_headers)
     if backend == "httpx":
         client = httpx.AsyncClient(
             base_url=settings.mobsf_url,
-            headers=headers,
+            headers=transport_headers,
             timeout=settings.mobsf_timeout,
             verify=settings.mobsf_verify_tls,
             follow_redirects=True,
@@ -187,7 +188,7 @@ def create_http_backend(settings: Settings, headers: Mapping[str, str]) -> HTTPB
         )
         return HttpxBackend(client, http2=settings.http_client_http2)
     if backend in {"curl_cffi", "curl-cffi"}:
-        return CurlCffiBackend(settings, headers)
+        return CurlCffiBackend(settings, transport_headers)
     raise ConfigurationError(
         "HTTP_CLIENT_BACKEND must be one of: requests, httpx, curl_cffi"
     )

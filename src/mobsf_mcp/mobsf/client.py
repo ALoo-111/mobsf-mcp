@@ -31,7 +31,10 @@ class MobSFClient:
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         self.settings = settings
-        headers = {"X-Mobsf-Api-Key": settings.mobsf_api_key}
+        headers = {
+            "X-Mobsf-Api-Key": settings.mobsf_api_key,
+            "Accept-Encoding": "identity",
+        }
         if http_client is not None:
             http_client.headers.update(headers)
         self._backend: HTTPBackend = (

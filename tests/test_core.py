@@ -102,6 +102,7 @@ async def test_client_sends_documented_header_and_health_check_request() -> None
     def handler(request: httpx.Request) -> httpx.Response:
         captured["authorization"] = request.headers.get("Authorization")
         captured["mobsf_header"] = request.headers.get("X-Mobsf-Api-Key")
+        captured["accept_encoding"] = request.headers.get("Accept-Encoding")
         captured["url"] = str(request.url)
         return httpx.Response(200, json={"scans": []}, request=request)
 
@@ -117,6 +118,7 @@ async def test_client_sends_documented_header_and_health_check_request() -> None
     assert result["reachable"] is True
     assert captured["authorization"] is None
     assert captured["mobsf_header"] == "runtime-only-key"
+    assert captured["accept_encoding"] == "identity"
     assert captured["url"] == "http://mobsf.test/api/v1/scans?page=1&page_size=1"
 
 
