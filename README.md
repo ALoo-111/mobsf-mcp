@@ -194,7 +194,7 @@ A live integration check can be performed separately by setting `MOBSF_URL`, `MO
 
 At startup, the server logs only the configured MobSF URL and a boolean `api_key_configured` value; it never logs the API key. The client sends the raw runtime value in the documented `X-Mobsf-Api-Key` header and does not add a `Bearer` prefix. The startup probe uses `GET /api/v1/scans?page=1&page_size=1`, which is the documented recent-scans endpoint.
 
-If this request returns HTTP 401 or 403, verify that the deployment has a non-empty `MOBSF_API_KEY`, that the key belongs to the configured `MOBSF_URL`, and that the hosted MobSF instance accepts API access for that key. A 403 from the backend is not treated as a successful health check, and the server continues to expose MCP tools so the deployment can be diagnosed without fabricating an authenticated result.
+If this request returns HTTP 401 or 403, verify that the deployment has a non-empty `MOBSF_API_KEY`, that the key belongs to the configured `MOBSF_URL`, and that the hosted MobSF instance accepts API access for that key. The official MobSF source protects `/api/` routes with a dedicated API middleware that compares the raw key against the configured instance key and returns HTTP 401 for a mismatch; web routes such as `/tasks` use Django session login and CSRF protection instead. A browser cookie or `X-CSRFToken` is therefore not a substitute for REST API authentication. A 403 from a hosted endpoint should be investigated as an upstream edge/service rejection or hosted-instance policy issue, not silently worked around with browser credentials. The server preserves only a sanitized JSON error or response content type for diagnosis, never the response body or credential.
 
 ## Security notes
 

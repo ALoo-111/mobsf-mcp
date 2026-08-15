@@ -146,8 +146,10 @@ class MobSFClient:
         if len(response.content) > self.settings.max_response_bytes:
             raise MobSFError("MobSF response exceeded the configured response-size limit")
         if response.status_code in {401, 403}:
+            backend_message = _safe_auth_message(response)
             raise MobSFAuthenticationError(
-                "MobSF authentication failed", status_code=response.status_code
+                f"MobSF authentication failed: {backend_message}",
+                status_code=response.status_code,
             )
         if response.status_code in {404, 405, 501}:
             raise MobSFUnsupportedEndpoint(
@@ -183,6 +185,14 @@ def _safe_body(response: httpx.Response) -> Any:
         return body
     except (json.JSONDecodeError, UnicodeDecodeError):
         return response.text[:500]
+
+
+def _safe_auth_message(response: httpx.Response) -> str:
+    body = _safe_body(response)
+    if isinstance(body, dict) and body.get("error"):
+        return str(body["error"])[:500]
+    content_type = response.headers.get("content-type", "unknown").split(";", 1)[0]
+    return f"HTTP {response.status_code} non-JSON response (content_type={content_type})"
 
 
 def _safe_error_message(response: httpx.Response) -> str:

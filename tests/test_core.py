@@ -128,6 +128,28 @@ async def test_client_maps_authentication_failure(status_code: int) -> None:
             base_url="http://mobsf.test", transport=httpx.MockTransport(handler)
         ),
     )
-    with pytest.raises(MobSFAuthenticationError):
+    with pytest.raises(MobSFAuthenticationError, match="unauthorized"):
         await client.search("demo")
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_client_redacts_non_json_auth_response() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            403,
+            text="Sensitive upstream page should not be logged",
+            headers={"content-type": "text/html; charset=utf-8"},
+            request=request,
+        )
+
+    client = MobSFClient(
+        _settings(),
+        http_client=httpx.AsyncClient(
+            base_url="http://mobsf.test", transport=httpx.MockTransport(handler)
+        ),
+    )
+    with pytest.raises(MobSFAuthenticationError, match="content_type=text/html") as error:
+        await client.search("demo")
+    assert "Sensitive upstream page" not in str(error.value)
     await client.aclose()
